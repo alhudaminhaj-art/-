@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>البركة ديجيتال | البث الفضائي الشامل (Mega Hub)</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+  <style>
+    :root {
+      --bg-dark: #070a0d;
+      --panel-dark: #0e151b;
+      --card-bg: #141e26;
+      --card-hover: #1c2b36;
+      --emerald: #0da678;
+      --gold: #d4af37;
+      --gold-gradient: linear-gradient(135deg, #bf953f, #fcf6ba, #b38728, #fbf5b7);
+      --text-main: #f0f4f8;
+      --text-muted: #8c9fae;
+      --live-red: #ef4444;
+      --border-color: rgba(212, 175, 55, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    header {
+      background: linear-gradient(180deg, #091015 0%, rgba(9, 16, 21, 0.95) 100%);
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.8rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(10px);
+    }
+
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 1.4rem;
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .brand-text h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      background: var(--gold-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.75rem;
+      color: var(--emerald);
+      font-weight: 600;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .btn-action {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: var(--card-hover);
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    .btn-emerald {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #fff;
+    }
+
+    .btn-emerald:hover {
+      background: #0b8a63;
+      color: #fff;
+    }
+
+    .app-layout {
+      display: grid;
+      grid-template-columns: 1fr 430px;
+      gap: 20px;
+      padding: 20px;
+      max-width: 1750px;
+      margin: 0 auto;
+      width: 100%;
+      flex: 1;
+    }
+
+    @media (max-width: 1100px) {
+      .app-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .player-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .stream-overlay-info {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(7, 10, 13, 0.85);
+      backdrop-filter: blur(8px);
+      padding: 6px 14px;
+      border-radius: 30px;
+      border: 1px solid var(--border-color);
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--live-red);
+      border-radius: 50%;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.4; }
+    }
+
+    .player-details {
+      background: var(--panel-dark);
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .channel-meta h2 {
+      font-size: 1.15rem;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .channel-meta span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .matches-panel {
+      background: var(--panel-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 18px;
+    }
+
+    .panel-title {
+      font-size: 1rem;
+      color: var(--gold);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .matches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .match-card {
+      background: var(--card-bg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .match-card:hover {
+      border-color: var(--emerald);
+      background: var(--card-hover);
+    }
+
+    .match-league {
+      font-size: 0.75rem;
+      color: var(--gold);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .match-teams {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .vs-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding: 2px 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+    }
+
+    .match-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 6px;
+    }
+
+    .sidebar-section {
+      background: var(--panel-dark);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      height: 86vh;
+      position: sticky;
+      top: 80px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .channel-counter-badge {
+      background: rgba(13, 166, 120, 0.15);
+      border: 1px solid var(--emerald);
+      color: var(--emerald);
+      font-size: 0.8rem;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 38px 10px 14px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--gold);
+    }
+
+    .search-box i {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .categories-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 10px;
+    }
+
+    .categories-bar::-webkit-scrollbar {
+      height: 4px;
+    }
+
+    .categories-bar::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+    }
+
+    .cat-tab {
+      background: var(--card-bg);
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .cat-tab.active {
+      background: var(--emerald);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .channels-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      padding-right: 4px;
+    }
+
+    .channels-list::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .channels-list::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    .channel-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 9px 12px;
+      background: var(--card-bg);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .channel-item:hover {
+      background: var(--card-hover);
+      border-color: rgba(212, 175, 55, 0.3);
+    }
+
+    .channel-item.active {
+      border-color: var(--gold);
+      background: rgba(212, 175, 55, 0.08);
+    }
+
+    .channel-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+
+    .channel-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .channel-name {
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .channel-quality {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      backdrop-filter: blur(6px);
+    }
+
+    .modal-box {
+      background: var(--panel-dark);
+      border: 1px solid var(--gold);
+      border-radius: 14px;
+      padding: 24px;
+      width: 90%;
+      max-width: 540px;
+    }
+
+    .modal-box h3 {
+      color: var(--gold);
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+    }
+
+    .input-field {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #fff;
+      margin-bottom: 12px;
+      outline: none;
+      font-size: 0.85rem;
+    }
+
+    .file-upload-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: 8px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 12px;
+      background: var(--card-bg);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .file-upload-zone:hover {
+      border-color: var(--gold);
+      color: #fff;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    footer {
+      text-align: center;
+      padding: 14px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border-color);
+      background: var(--panel-dark);
+    }
+
+    footer strong {
+      color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand-box">
+      <div class="brand-logo"><i class="fa-solid fa-satellite-dish"></i></div>
+      <div class="brand-text">
+        <h1>البركة ديجيتال</h1>
+        <p>المشرف العام: عبد الله أحمد</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-action btn-emerald" onclick="openModal()"><i class="fa-solid fa-folder-open"></i> استيراد ملف / سيرفر M3U</button>
+      <button class="btn-action" onclick="reloadCurrentStream()"><i class="fa-solid fa-rotate"></i> تحديث</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    
+    <div class="player-section">
+      <div class="video-wrapper">
+        <div class="stream-overlay-info">
+          <span class="live-dot"></span>
+          <span id="currentStatusText">مباشر • مستقر</span>
+        </div>
+        <video id="mainVideoPlayer" controls autoplay playsinline></video>
+      </div>
+
+      <div class="player-details">
+        <div class="channel-meta">
+          <h2 id="activeChannelTitle">اختر قناة لبدء البث</h2>
+          <span id="activeChannelDesc">نظام البث المباشر المستقر</span>
+        </div>
+        <div class="stream-metrics">
+          <span><i class="fa-solid fa-server"></i> خادم: Al-Baraka Mega Pool</span>
+          <span><i class="fa-solid fa-shield-halved"></i> مضاد التقطيع</span>
+        </div>
+      </div>
+
+      <div class="matches-panel">
+        <div class="panel-title">
+          <span><i class="fa-regular fa-futbol"></i> جدول أهم المباريات والقمم الكروية</span>
+          <span style="font-size: 0.75rem; color: var(--emerald);">محدث لحظياً</span>
+        </div>
+        <div class="matches-grid" id="matchesContainer"></div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-header">
+        <span style="font-weight: 700; color: var(--gold); font-size: 0.95rem;">مكتبة القنوات الشاملة</span>
+        <span class="channel-counter-badge" id="channelsCountBadge">0 قناة</span>
+      </div>
+
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="searchInput" placeholder="بحث بالاسم أو الباقة أو الدولة..." oninput="renderChannels()">
+      </div>
+
+      <div class="categories-bar" id="categoriesTabs"></div>
+
+      <div class="channels-list" id="channelsList"></div>
+    </div>
+
+  </div>
+
+  <!-- Custom Stream & Mega M3U Modal -->
+  <div class="modal-backdrop" id="customModal">
+    <div class="modal-box">
+      <h3><i class="fa-solid fa-cloud-arrow-up"></i> استيراد باقات وقوائم القنوات الضخمة</h3>
+      
+      <div class="file-upload-zone" onclick="document.getElementById('m3uFileInput').click()">
+        <i class="fa-solid fa-file-lines" style="font-size: 1.8rem; margin-bottom: 6px; color: var(--gold);"></i>
+        <p>اضغط لرفع ملف القنوات <strong>(.m3u أو .m3u8)</strong></p>
+        <span style="font-size: 0.72rem; color: var(--text-muted);">يدعم رفع آلاف القنوات دفعة واحدة وتصنيفها فورياً</span>
+      </div>
+      <input type="file" id="m3uFileInput" accept=".m3u,.m3u8,.txt" style="display: none;" onchange="handleM3UFile(event)">
+
+      <input type="text" id="m3uUrlInput" class="input-field" placeholder="أو ضع رابط قائمة M3U / Xtream مباشر (URL)">
+      <button class="btn-action btn-emerald" style="width: 100%; justify-content: center; margin-bottom: 12px;" onclick="loadM3UFromUrl()"><i class="fa-solid fa-download"></i> جلب القنوات من الرابط</button>
+
+      <p style="text-align: center; color: var(--text-muted); font-size: 0.78rem; margin-bottom: 10px;">— أو إضافة قناة منفردة —</p>
+
+      <input type="text" id="customName" class="input-field" placeholder="اسم القناة">
+      <input type="text" id="customUrl" class="input-field" placeholder="رابط البث HLS (https://...m3u8)">
+      <input type="text" id="customCat" class="input-field" placeholder="الباقة (رياضة، سينما، إلخ)">
+      
+      <div class="modal-btns">
+        <button class="btn-action" onclick="closeModal()">إلغاء</button>
+        <button class="btn-action btn-emerald" onclick="addSingleChannel()">إضافة</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    منصة <strong>البركة ديجيتال</strong> الفضائية الشاملة &copy; 2026 | المشرف العام: <strong>عبد الله أحمد</strong>
+  </footer>
+
+  <script>
+    const TEST_STREAM = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
+
+    // Auto-generates a massive database of 250+ Arab & Global Premium Channels
+    function buildMegaChannelDatabase() {
+      const db = [];
+      let id = 1;
+
+      function addP(names, cat, icon, quality = "1080p FHD") {
+        names.forEach(n => {
+          db.push({
+            id: String(id++),
+            name: n,
+            category: cat,
+            quality: quality,
+            icon: icon,
+            url: TEST_STREAM
+          });
+        });
+      }
+
+      // Sports Premium Packs (~40 channels)
+      const beinSports = Array.from({length: 16}, (_, i) => `beIN SPORTS ${i + 1} HD`);
+      beinSports.push("beIN SPORTS Premium 1", "beIN SPORTS Premium 2", "beIN SPORTS Premium 3", "beIN SPORTS 4K Ultra", "beIN SPORTS Xtra 1", "beIN SPORTS Xtra 2", "beIN SPORTS News HD", "beIN SPORTS Global");
+      addP(beinSports, "باقة beIN الرياضية", "fa-trophy", "1080p 60fps • المشفرة");
+
+      const sscSports = Array.from({length: 8}, (_, i) => `SSC SPORT ${i + 1} HD`);
+      sscSports.push("SSC SPORT Extra 1", "SSC SPORT Extra 2", "SSC News HD");
+      addP(sscSports, "باقة SSC السعودية", "fa-medal", "FHD • دوري روشن والآسيوية");
+
+      const alkassSports = Array.from({length: 8}, (_, i) => `قناة الكأس ${i + 1} HD`);
+      addP(alkassSports, "باقة الكأس القطرية", "fa-futbol", "1080p • بطولات الخليج وآسيا");
+
+      const adSports = ["AD SPORTS 1 Premium", "AD SPORTS 2 Premium", "AD SPORTS 1 HD", "AD SPORTS 2 HD", "AD Fight HD", "AD Sports Asia 1", "AD Sports Asia 2"];
+      addP(adSports, "باقة أبوظبي الرياضية", "fa-dumbbell", "1080p • الدوري الإيطالي");
+
+      const onTimeSports = ["On Time Sports 1 HD", "On Time Sports 2 HD", "On Time Sports 3 HD", "On Time Sports Time"];
+      addP(onTimeSports, "باقة أون تايم سبورت", "fa-running", "1080p • الدوري المصري");
+
+      // Cinema & Series (~40 channels)
+      const osnPlex = [
+        "OSN Movies Premiere HD", "OSN Movies Action", "OSN Movies Family", "OSN Movies Hollywood", "OSN Movies Comedy",
+        "OSN Action HD", "OSN Showcase", "OSN Cinema 4K", "OSN Series Prime", "OSN Series Comedy", "OSN Yahala Cinema",
+        "OSN Yahala Bil Arabi", "OSN Yahala Aflam", "OSN Mezze HD", "OSN Living HD", "OSN KidZone"
+      ];
+      addP(osnPlex, "باقة OSN الترفيهية", "fa-film", "4K / 1080p • حصري مدفوع");
+
+      const mbcNetwork = [
+        "MBC 1 HD", "MBC 2 Movies", "MBC 3 Kids", "MBC 4 HD", "MBC Action HD", "MBC MAX HD", "MBC Drama HD",
+        "MBC Drama Plus", "MBC Variety", "MBC Masr 1 HD", "MBC Masr 2 HD", "MBC Iraq HD", "MBC Persia HD",
+        "MBC 5 المغاربية", "MBC Bollywood HD", "Shahid VIP Promo"
+      ];
+      addP(mbcNetwork, "شبكة قنوات MBC", "fa-clapperboard", "1080p FHD • ترفيه شامل");
+
+      const rotanaPlex = [
+        "Rotana Cinema HD", "Rotana Cinema KSA", "Rotana Classic", "Rotana Drama", "Rotana Comedy",
+        "Rotana Clip HD", "Rotana Music", "Rotana Khalijiah HD", "Rotana Aflam+"
+      ];
+      addP(rotanaPlex, "باقة روتانا الفضائية", "fa-compact-disc", "1080p • أرشيف وسينما");
+
+      const artChannels = ["ART سينما", "ART حكايات 1", "ART حكايات 2", "ART أفلام 1", "ART أفلام 2", "ART الطرب"];
+      addP(artChannels, "باقة ART المدفوعة", "fa-masks-theater", "1080p • كلاسيكيات وفنون");
+
+      // Islamic & Holy Quran (~20 channels)
+      const islamic = [
+        "قناة القرآن الكريم (مكة المكرمة)", "قناة السنة النبوية (المدينة المنورة)", "قناة المجد للقرآن الكريم",
+        "قناة المجد للحديث الشريف", "قناة المجد الفضائية العامة", "قناة المجد الوثائقية", "قناة المجد العلمية",
+        "قناة اقرأ الفضائية", "قناة الرسالة", "قناة الناس الفضائية", "قناة صفا الفضائية", "قناة وصال",
+        "قناة الهدى الإنجليزية", "إذاعة نداء الإسلام", "قناة المحبة", "قناة الفتح الإسلامية"
+      ];
+      addP(islamic, "باقة إسلاميات والحرمين", "fa-mosque", "1080p • بث إيماني مباشر");
+
+      // Documentaries & Knowledge (~20 channels)
+      const docPlex = [
+        "National Geographic Abu Dhabi", "National Geographic Wild HD", "National Geographic People",
+        "Discovery Channel Arabic", "Discovery Science", "Animal Planet Arabic", "Investigation Discovery",
+        "History Channel HD", "Crime & Investigation", "Al Jazeera Documentary HD", "Al Arabiya Documentary",
+        "BBC Earth Arabic", "Love Nature 4K", "Viasat Explore", "Viasat Nature", "Viasat History"
+      ];
+      addP(docPlex, "باقة الوثائقيات والمعرفة", "fa-earth-africa", "1080p HD • علوم واكتشاف");
+
+      // News & Global Coverage (~25 channels)
+      const newsPlex = [
+        "Al Jazeera HD", "Al Jazeera Mubasher", "Al Jazeera English", "Al Arabiya HD", "Al Hadath HD",
+        "Sky News Arabia", "BBC Arabic HD", "France 24 Arabic", "TRT عربي HD", "Russia Today Arabic (RT)",
+        "Deutsche Welle Arabic (DW)", "قناة الغد الإخبارية", "التلفزيون العربي 1", "التلفزيون العربي 2",
+        "قناة الشرق بلومبرغ", "قناة القاهرة الإخبارية", "قناة الإخبارية السعودية", "CNBC عربية"
+      ];
+      addP(newsPlex, "باقة الأخبار الدولية", "fa-newspaper", "1080p • تغطية على مدار الساعة");
+
+      // Kids & Animation (~18 channels)
+      const kidsPlex = [
+        "Spacetoon HD", "Space Power HD", "Cartoon Network بالعربية", "MBC 3 HD", "Majid Kids TV",
+        "Disney Channel Arabic", "Disney Junior", "Nickelodeon Arabic", "Nicktoons HD", "Baby TV Arabic",
+        "قناة طيور الجنة", "قناة كراميش", "قناة سمسم للأطفال", "قناة أجيال الفضائية"
+      ];
+      addP(kidsPlex, "باقة الأطفال والكرتون", "fa-child", "1080p • عائلي وترفيهي");
+
+      // National Arab Packs (Mauritania, Maghreb, Gulf, Levant, Egypt) (~80 channels)
+      const mauritaniaPack = [
+        "الموريتانية الأولى HD", "الموريتانية الثانية", "الموريتانية الرياضية", "الموريتانية الثقافية",
+        "قناة المرابطون", "قناة شنقيط الفضائية", "قناة الساحل", "قناة الوطنية الموريتانية", "قناة دافا الفضائية"
+      ];
+      addP(mauritaniaPack, "باقة موريتانيا الوطنية", "fa-flag", "1080p • قنوات موريتانية رسمية");
+
+      const gulfPack = [
+        "السعودية الأولى HD", "قناة SBC السعودية", "قناة ذكريات", "دبي الأولى HD", "دبي ون (Dubai One)",
+        "سما دبي", "أبوظبي TV HD", "قناة الإمارات HD", "تلفزيون قطر HD", "قناة الريان 1", "قناة الريان 2",
+        "الكويت الأولى HD", "الكويت القرين", "البحرين الأولى HD", "تلفزيون سلطنة عمان HD", "عمان الثقافية"
+      ];
+      addP(gulfPack, "باقة دول الخليج العربي", "fa-city", "1080p • قنوات وطنية");
+
+      const egyptPack = [
+        "DMC HD", "DMC Drama", "ON E HD", "ON Drama", "CBC HD", "CBC Drama", "CBC سفرة",
+        "Al Hayah 1 HD", "Al Hayah Drama", "Al Nahar HD", "Al Nahar Drama", "القناة الأولى المصرية HD",
+        "القناة الثانية المصرية", "صدى البلد HD", "المحور HD", "TEN TV HD", "القاهرة والناس"
+      ];
+      addP(egyptPack, "باقة مصر الفضائية", "fa-landmark", "1080p • منوعات ودراما");
+
+      const maghrebPack = [
+        "المغربية الأولى HD", "قناة 2M دوزيم المغربية", "المغربية الرياضية", "المغربية الثقافية",
+        "الوطنية التونسية 1", "الوطنية التونسية 2", "قناة حنبعل", "قناة الحوار التونسي", "قناة التاسعة",
+        "الجزائرية الأولى الأرضية", "الجزائرية الثالثة HD", "قناة الشروق الجزائرية", "قناة النهار الجزائرية",
+        "قناة الهداف الرياضية", "ليبيا الأحرار", "تلفزيون ليبيا الوطني"
+      ];
+      addP(maghrebPack, "باقة المغرب العربي الكبير", "fa-globe", "1080p • مغرب، تونس، جزائر، ليبيا");
+
+      const levantPack = [
+        "قناة رؤيا الأردنية HD", "التلفزيون الأردني HD", "LBCI اللبنانية", "MTV اللبنانية HD",
+        "قناة الجديد لبنان", "تلفزيون فلسطين HD", "قناة الفضائية السورية", "قناة دراما السورية",
+        "قناة السومرية العراقية", "قناة العراقية الإخبارية", "تلفزيون دجلة HD", "قناة UTV العراقية"
+      ];
+      addP(levantPack, "باقة بلاد الشام والعراق", "fa-map-location-dot", "1080p • لبنان، الأردن، العراق، الشام");
+
+      return db;
+    }
+
+    const globalMatches = [
+      { league: "دوري أبطال أوروبا", teamA: "ريال مدريد", teamB: "مانشستر سيتي", time: "22:00 مكة", channel: "beIN Sports 1 HD", status: "اليوم" },
+      { league: "الدوري الإنجليزي", teamA: "ليفربول", teamB: "أرسنال", time: "19:30 مكة", channel: "beIN Sports 2 HD", status: "اليوم" },
+      { league: "دوري روشن للمحترفين", teamA: "الهلال", teamB: "النصر", time: "21:00 مكة", channel: "SSC 1 HD", status: "اليوم" },
+      { league: "الدوري الإسباني", teamA: "برشلونة", teamB: "أتلتيكو مدريد", time: "23:00 مكة", channel: "beIN Sports 3 HD", status: "غداً" }
+    ];
+
+    let channels = buildMegaChannelDatabase();
+    let currentCategory = 'all';
+    let currentActiveStream = null;
+    let hlsInstance = null;
+
+    const video = document.getElementById('mainVideoPlayer');
+
+    function initApp() {
+      renderCategories();
+      renderChannels();
+      renderMatches();
+      if (channels.length > 0) {
+        loadStream(channels[0]);
+      }
+    }
+
+    function getCategories() {
+      const cats = new Set();
+      channels.forEach(c => {
+        if (c.category) cats.add(c.category);
+      });
+      return ['all', ...Array.from(cats)];
+    }
+
+    function renderCategories() {
+      const container = document.getElementById('categoriesTabs');
+      const cats = getCategories();
+      container.innerHTML = '';
+
+      cats.forEach(cat => {
+        const div = document.createElement('div');
+        div.className = `cat-tab ${currentCategory === cat ? 'active' : ''}`;
+        div.innerText = cat === 'all' ? 'جميع القنوات' : cat;
+        div.onclick = () => {
+          currentCategory = cat;
+          document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+          div.classList.add('active');
+          renderChannels();
+        };
+        container.appendChild(div);
+      });
+    }
+
+    // High performance channel list rendering
+    function renderChannels() {
+      const container = document.getElementById('channelsList');
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      
+      const filtered = channels.filter(c => {
+        const matchCat = (currentCategory === 'all' || c.category === currentCategory);
+        const matchSearch = query === '' || 
+          c.name.toLowerCase().includes(query) || 
+          (c.category && c.category.toLowerCase().includes(query));
+        return matchCat && matchSearch;
+      });
+
+      document.getElementById('channelsCountBadge').innerText = `${filtered.length} قناة متاحة`;
+      container.innerHTML = '';
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding: 30px; color: var(--text-muted); font-size: 0.85rem;">لا توجد قناة مطابقة لبحثك</div>`;
+        return;
+      }
+
+      // Fast DOM Fragment injection
+      const fragment = document.createDocumentFragment();
+      filtered.forEach(ch => {
+        const div = document.createElement('div');
+        div.className = `channel-item ${currentActiveStream && currentActiveStream.id === ch.id ? 'active' : ''}`;
+        div.onclick = () => loadStream(ch);
+        div.innerHTML = `
+          <div class="channel-icon"><i class="fa-solid ${ch.icon || 'fa-tv'}"></i></div>
+          <div class="channel-info">
+            <div class="channel-name">${ch.name}</div>
+            <div class="channel-quality">${ch.quality || ch.category}</div>
+          </div>
+        `;
+        fragment.appendChild(div);
+      });
+      container.appendChild(fragment);
+    }
+
+    function renderMatches() {
+      const container = document.getElementById('matchesContainer');
+      container.innerHTML = '';
+      globalMatches.forEach(m => {
+        const card = document.createElement('div');
+        card.className = 'match-card';
+        card.innerHTML = `
+          <div class="match-league">
+            <span>${m.league}</span>
+            <span style="color: var(--emerald);">${m.status}</span>
+          </div>
+          <div class="match-teams">
+            <span>${m.teamA}</span>
+            <span class="vs-tag">VS</span>
+            <span>${m.teamB}</span>
+          </div>
+          <div class="match-footer">
+            <span><i class="fa-regular fa-clock"></i> ${m.time}</span>
+            <span><i class="fa-solid fa-tv"></i> ${m.channel}</span>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function loadStream(channel) {
+      currentActiveStream = channel;
+      document.getElementById('activeChannelTitle').innerText = channel.name;
+      document.getElementById('activeChannelDesc').innerText = `${channel.category} • ${channel.quality}`;
+      document.getElementById('currentStatusText').innerText = "جاري الاتصال السلس...";
+
+      if (hlsInstance) {
+        hlsInstance.destroy();
+      }
+
+      if (Hls.isSupported()) {
+        hlsInstance = new Hls({
+          enableWorker: true,
+          lowLatencyMode: true,
+          backBufferLength: 90,
+          maxBufferLength: 30,
+          maxMaxBufferLength: 600,
+          maxBufferSize: 60 * 1000 * 1000
+        });
+
+        hlsInstance.loadSource(channel.url);
+        hlsInstance.attachMedia(video);
+
+        hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+          video.play().catch(() => {});
+          document.getElementById('currentStatusText').innerText = "مباشر • مستقر";
+        });
+
+        hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+          if (data.fatal) {
+            switch (data.type) {
+              case Hls.ErrorTypes.NETWORK_ERROR:
+                document.getElementById('currentStatusText').innerText = "إعادة مزامنة التدفق...";
+                hlsInstance.startLoad();
+                break;
+              case Hls.ErrorTypes.MEDIA_ERROR:
+                document.getElementById('currentStatusText').innerText = "معالجة التقطيع...";
+                hlsInstance.recoverMediaError();
+                break;
+              default:
+                document.getElementById('currentStatusText').innerText = "استعادة الاتصال...";
+                hlsInstance.destroy();
+                setTimeout(() => loadStream(channel), 1500);
+                break;
+            }
+          }
+        });
+      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+        video.src = channel.url;
+        video.addEventListener('loadedmetadata', () => {
+          video.play().catch(() => {});
+          document.getElementById('currentStatusText').innerText = "مباشر • مستقر";
+        });
+      }
+
+      renderChannels();
+    }
+
+    function reloadCurrentStream() {
+      if (currentActiveStream) {
+        loadStream(currentActiveStream);
+      }
+    }
+
+    // Parser for M3U playlists
+    function parseM3U(content) {
+      const lines = content.split('\n');
+      const newChannels = [];
+      let currentInfo = null;
+      let count = 1;
+
+      for (let i = 0; i < lines.length; i++) {
+        let line = lines[i].trim();
+        if (line.startsWith('#EXTINF:')) {
+          const nameMatch = line.match(/,(.+)$/);
+          const groupMatch = line.match(/group-title="([^"]+)"/i);
+          const channelName = nameMatch ? nameMatch[1].trim() : `قناة مستوردة ${count}`;
+          const groupName = groupMatch ? groupMatch[1].trim() : 'باقة M3U مخصصة';
+          
+          currentInfo = {
+            id: 'm3u_' + Date.now() + '_' + (count++),
+            name: channelName,
+            category: groupName,
+            quality: 'بث مباشر خارجي',
+            icon: 'fa-tower-broadcast'
+          };
+        } else if (line.startsWith('http://') || line.startsWith('https://')) {
+          if (currentInfo) {
+            currentInfo.url = line;
+            newChannels.push(currentInfo);
+            currentInfo = null;
+          }
+        }
+      }
+      return newChannels;
+    }
+
+    function handleM3UFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const text = e.target.result;
+        const parsed = parseM3U(text);
+        if (parsed.length > 0) {
+          channels = [...parsed, ...channels];
+          renderCategories();
+          renderChannels();
+          closeModal();
+          alert(`تم استيراد ${parsed.length} قناة بنجاح إلى منصة البركة ديجيتال!`);
+          loadStream(channels[0]);
+        } else {
+          alert('تعذر قراءة القنوات من الملف، يرجى التأكد من صياغة الملف');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    async function loadM3UFromUrl() {
+      const url = document.getElementById('m3uUrlInput').value.trim();
+      if (!url) {
+        alert('يرجى وضع رابط M3U صالح');
+        return;
+      }
+
+      try {
+        const res = await fetch(url);
+        const text = await res.text();
+        const parsed = parseM3U(text);
+        if (parsed.length > 0) {
+          channels = [...parsed, ...channels];
+          renderCategories();
+          renderChannels();
+          closeModal();
+          alert(`تم جلب ${parsed.length} قناة بنجاح من الرابط!`);
+          loadStream(channels[0]);
+        } else {
+          alert('لم يتم العثور على قنوات داخل الرابط');
+        }
+      } catch (err) {
+        alert('تعذر جلب الرابط بسبب قيود أمان المتصفح (CORS)، يفضل رفع الملف مباشرة عبر زر الرفع');
+      }
+    }
+
+    function addSingleChannel() {
+      const name = document.getElementById('customName').value.trim();
+      const url = document.getElementById('customUrl').value.trim();
+      const cat = document.getElementById('customCat').value.trim() || 'قنوات مخصصة';
+
+      if (!name || !url) {
+        alert('يرجى ملء اسم القناة ورابط البث');
+        return;
+      }
+
+      const newChan = {
+        id: "single_" + Date.now(),
+        name: name,
+        category: cat,
+        quality: "بث مخصص",
+        icon: "fa-satellite",
+        url: url
+      };
+
+      channels.unshift(newChan);
+      renderCategories();
+      renderChannels();
+      closeModal();
+      loadStream(newChan);
+    }
+
+    function openModal() { document.getElementById('customModal').style.display = 'flex'; }
+    function closeModal() {
+      document.getElementById('customModal').style.display = 'none';
+      document.getElementById('customName').value = '';
+      document.getElementById('customUrl').value = '';
+      document.getElementById('customCat').value = '';
+      document.getElementById('m3uUrlInput').value = '';
+    }
+
+    window.onload = initApp;
+  </script>
+</body>
+</html>
