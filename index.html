@@ -4,379 +4,233 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>البركة TV - التطبيق الشامل</title>
-  <!-- مكتبة تشغيل البث المباشر HLS -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
-  <!-- خطوط وتنسيقات أيقونات -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: radial-gradient(circle at center, #0a192f 0%, #030a14 100%);
-      color: #ffffff;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow-x: hidden;
-    }
-
-    /* الشريط العلوي */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { background: radial-gradient(circle at center, #0a192f 0%, #030a14 100%); color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px 35px;
-      background: rgba(4, 16, 30, 0.85);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 25px; background: rgba(4, 16, 30, 0.9);
       border-bottom: 2px solid rgba(212, 175, 55, 0.4);
-      backdrop-filter: blur(10px);
     }
-
-    .brand-section {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-    }
-
+    .brand-section { display: flex; align-items: center; gap: 12px; }
     .logo-badge {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
+      width: 44px; height: 44px; border-radius: 50%;
       background: linear-gradient(135deg, #1e3c72, #2a5298);
-      border: 2px solid #d4af37;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      color: #d4af37;
-      box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+      border: 2px solid #d4af37; display: flex; align-items: center; justify-content: center;
+      font-size: 20px; color: #d4af37;
+    }
+    .brand-title { font-size: 20px; font-weight: bold; }
+    .brand-title span { color: #d4af37; }
+    .dev-badge {
+      font-size: 14px; color: #d4af37; background: rgba(212, 175, 55, 0.1);
+      padding: 6px 14px; border-radius: 20px; border: 1px solid rgba(212, 175, 55, 0.3); font-weight: bold;
     }
 
-    .brand-title {
-      font-size: 22px;
-      font-weight: bold;
-      letter-spacing: 0.5px;
-      color: #fff;
+    .main-layout { display: flex; flex: 1; padding: 20px; gap: 20px; }
+    @media (max-width: 900px) { .main-layout { flex-direction: column; padding: 10px; } }
+
+    .player-area { flex: 1.2; display: flex; flex-direction: column; gap: 12px; }
+    .video-box {
+      position: relative; width: 100%; height: 380px; background: #000;
+      border-radius: 12px; overflow: hidden; border: 1.5px solid rgba(212, 175, 55, 0.5);
+    }
+    @media (max-width: 900px) { .video-box { height: 220px; } }
+    video, iframe { width: 100%; height: 100%; border: none; }
+    
+    .player-info {
+      background: rgba(12, 33, 56, 0.85); padding: 12px 18px; border-radius: 8px;
+      border: 1px solid rgba(212, 175, 55, 0.2); display: flex; justify-content: space-between; align-items: center;
+    }
+    .player-info h3 { color: #d4af37; font-size: 16px; }
+
+    .channels-area { flex: 1.8; display: flex; flex-direction: column; gap: 12px; }
+    .controls-bar { display: flex; gap: 10px; flex-wrap: wrap; }
+    .search-input {
+      flex: 1; min-width: 180px; background: rgba(12, 33, 56, 0.9);
+      border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 8px;
+      padding: 8px 14px; color: #fff; outline: none;
+    }
+    .search-input:focus { border-color: #d4af37; }
+
+    .channels-count {
+      align-self: center; font-size: 13px; color: #d4af37; font-weight: bold;
     }
 
-    .brand-title span {
-      color: #d4af37;
+    .grid-container {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px; max-height: 520px; overflow-y: auto; padding-right: 5px;
     }
+    .grid-container::-webkit-scrollbar { width: 5px; }
+    .grid-container::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 4px; }
 
-    .developer-tag {
-      font-size: 16px;
-      color: #d4af37;
-      background: rgba(212, 175, 55, 0.1);
-      padding: 8px 18px;
-      border-radius: 20px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      font-weight: bold;
-    }
-
-    /* منطقة المشغل الرئيسي */
-    .main-container {
-      display: flex;
-      flex: 1;
-      padding: 20px 35px;
-      gap: 25px;
-    }
-
-    .player-section {
-      flex: 1.2;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .video-wrapper {
-      position: relative;
-      width: 100%;
-      height: 420px;
-      background: #000;
-      border-radius: 12px;
-      overflow: hidden;
-      border: 1.5px solid rgba(212, 175, 55, 0.5);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7);
-    }
-
-    video {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .now-playing {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(12, 33, 56, 0.8);
-      padding: 12px 20px;
-      border-radius: 8px;
-      border: 1px solid rgba(212, 175, 55, 0.2);
-    }
-
-    .now-playing h3 {
-      font-size: 18px;
-      color: #d4af37;
-    }
-
-    /* قسم شبكة القنوات */
-    .channels-section {
-      flex: 1.8;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-
-    .category-tabs {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding-bottom: 5px;
-    }
-
-    .tab-btn {
-      background: rgba(12, 33, 56, 0.7);
-      color: #fff;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      padding: 8px 18px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s ease;
-      white-space: nowrap;
-    }
-
-    .tab-btn.active, .tab-btn:hover {
-      background: linear-gradient(135deg, #d4af37, #aa820a);
-      color: #030a14;
-      font-weight: bold;
-      border-color: #d4af37;
-    }
-
-    .channels-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 12px;
-      max-height: 480px;
-      overflow-y: auto;
-      padding-right: 5px;
-    }
-
-    /* شريط التمرير */
-    .channels-grid::-webkit-scrollbar {
-      width: 6px;
-    }
-    .channels-grid::-webkit-scrollbar-thumb {
-      background: rgba(212, 175, 55, 0.4);
-      border-radius: 4px;
-    }
-
-    .channel-card {
+    .card {
       background: linear-gradient(145deg, #0d243f, #071526);
-      border: 1px solid rgba(212, 175, 55, 0.25);
-      border-radius: 10px;
-      padding: 15px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      text-align: center;
+      border: 1px solid rgba(212, 175, 55, 0.2); border-radius: 8px;
+      padding: 12px 8px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+      transition: all 0.2s ease; text-align: center; height: 90px;
     }
-
-    .channel-card:hover, .channel-card:focus {
-      transform: translateY(-4px);
-      border-color: #d4af37;
-      box-shadow: 0 6px 15px rgba(212, 175, 55, 0.25);
-      background: linear-gradient(145deg, #133358, #0b1f38);
+    .card:hover, .card.active {
+      transform: translateY(-3px); border-color: #d4af37;
+      background: linear-gradient(145deg, #163860, #0a1e36);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.2);
     }
+    .card img { max-width: 40px; max-height: 30px; object-fit: contain; }
+    .card span { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
 
-    .channel-icon {
-      font-size: 24px;
-      color: #d4af37;
-    }
-
-    .channel-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #e0e0e0;
-    }
-
-    /* الشريط السفلي */
     footer {
-      margin-top: auto;
-      background: #02060d;
-      padding: 12px 35px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid rgba(212, 175, 55, 0.2);
-      font-size: 13px;
-      color: #8fa0b5;
-    }
-
-    @media (max-width: 900px) {
-      .main-container {
-        flex-direction: column;
-        padding: 15px;
-      }
-      .video-wrapper {
-        height: 240px;
-      }
+      background: #02060d; padding: 10px 25px; display: flex;
+      justify-content: space-between; align-items: center;
+      border-top: 1px solid rgba(212, 175, 55, 0.2); font-size: 12px; color: #8fa0b5;
     }
   </style>
 </head>
 <body>
 
-  <!-- شريط العنوان والهوية -->
   <header>
     <div class="brand-section">
-      <div class="logo-badge">
-        <i class="fa-solid fa-tv"></i>
-      </div>
+      <div class="logo-badge"><i class="fa-solid fa-tv"></i></div>
       <div class="brand-title">البركة <span>TV</span></div>
     </div>
-    <div class="developer-tag">
-      <i class="fa-solid fa-code"></i> برمجة: عبد الله أحمد
-    </div>
+    <div class="dev-badge"><i class="fa-solid fa-code"></i> برمجة: عبد الله أحمد</div>
   </header>
 
-  <!-- جسم التطبيق -->
-  <div class="main-container">
-    
-    <!-- مشغل البث التفاعلي -->
-    <section class="player-section">
-      <div class="video-wrapper">
+  <div class="main-layout">
+    <!-- مشغل الفيديو -->
+    <div class="player-area">
+      <div class="video-box" id="playerContainer">
         <video id="videoPlayer" controls autoplay></video>
       </div>
-      <div class="now-playing">
-        <span id="currentStatus" style="color: #4cd137;">● بث حي ومباشر</span>
-        <h3 id="currentChannelName">اختر قناة لبدء المشاهدة</h3>
+      <div class="player-info">
+        <span style="color: #4cd137;">● بث حي ومباشر</span>
+        <h3 id="channelTitle">اختر قناة لبدء البث</h3>
       </div>
-    </section>
+    </div>
 
-    <!-- شبكة القنوات -->
-    <section class="channels-section">
-      <div class="category-tabs">
-        <button class="tab-btn active">جميع القنوات</button>
-        <button class="tab-btn">إخبارية</button>
-        <button class="tab-btn">إسلامية</button>
-        <button class="tab-btn">وثائقية ومنوعة</button>
+    <!-- قائمة وبحث القنوات -->
+    <div class="channels-area">
+      <div class="controls-bar">
+        <input type="text" id="searchInput" class="search-input" placeholder="بحث عن قناة عربية...">
+        <div class="channels-count" id="countBadge">جاري جلب القنوات...</div>
       </div>
-
-      <div class="channels-grid" id="channelsList">
-        <!-- يتم توليد القنوات تلقائياً عبر JavaScript -->
-      </div>
-    </section>
-
+      <div class="grid-container" id="grid"></div>
+    </div>
   </div>
 
-  <!-- الشريط السفلي -->
   <footer>
-    <div><i class="fa-solid fa-shield-halved"></i> نظام تشغيل متصل وسريع</div>
-    <div>تطبيق البركة TV © 2026 - جميع الحقوق محفوظة للمطور عبد الله أحمد</div>
+    <div><i class="fa-solid fa-tower-broadcast"></i> بث سحابي مباشر</div>
+    <div>تطبيق البركة TV © 2026 - تطوير: عبد الله أحمد</div>
   </footer>
 
   <script>
-    // قائمة القنوات وروابط البث المباشر (HLS / m3u8)
-    const channels = [
-      {
-        name: "الجزيرة الإخبارية",
-        icon: "fa-bullhorn",
-        url: "https://live-hls-web-aje.getaj.net/AJE/01.m3u8"
-      },
-      {
-        name: "الجزيرة الإنجليزية",
-        icon: "fa-globe",
-        url: "https://live-hls-web-aje.getaj.net/AJE/index.m3u8"
-      },
-      {
-        name: "قناة القرآن الكريم",
-        icon: "fa-kaaba",
-        url: "https://win.holol.com/live/quran/playlist.m3u8"
-      },
-      {
-        name: "قناة السنة النبوية",
-        icon: "fa-mosque",
-        url: "https://win.holol.com/live/sunnah/playlist.m3u8"
-      },
-      {
-        name: "فرانس 24 عربي",
-        icon: "fa-newspaper",
-        url: "https://static.france24.com/live/F24_AR_LO_HLS/live_tv.m3u8"
-      },
-      {
-        name: "TRT عربي",
-        icon: "fa-satellite",
-        url: "https://tv-trtarabi.medya.trt.com.tr/master.m3u8"
-      },
-      {
-        name: "روسيا اليوم (RT)",
-        icon: "fa-tower-broadcast",
-        url: "https://rt-ara.rttv.com/live/rtarab/playlist.m3u8"
-      },
-      {
-        name: "BBC عربي",
-        icon: "fa-radio",
-        url: "https://stream.live.vc.bbcmedia.co.uk/bbc_arabic_tv"
-      },
-      {
-        name: "DW عربية",
-        icon: "fa-tv",
-        url: "https://dwamdstream104.akamaized.net/hls/live/2015530/dwstream104/index.m3u8"
-      }
+    const grid = document.getElementById('grid');
+    const searchInput = document.getElementById('searchInput');
+    const channelTitle = document.getElementById('channelTitle');
+    const playerContainer = document.getElementById('playerContainer');
+    const countBadge = document.getElementById('countBadge');
+    let hls = new Hls();
+    let allChannels = [];
+
+    // قنوات عربية مباشرة ومضمونة تعمل بدون حظر CORS
+    const directChannels = [
+      { name: "القرآن الكريم (مكة)", stream: "https://win.holol.com/live/quran/playlist.m3u8", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Quran_TV_Saudi_Logo.png/120px-Quran_TV_Saudi_Logo.png", type: "hls" },
+      { name: "السنة النبوية (المدينة)", stream: "https://win.holol.com/live/sunnah/playlist.m3u8", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/90/Sunnah_TV_Saudi_Logo.png/120px-Sunnah_TV_Saudi_Logo.png", type: "hls" },
+      { name: "الجزيرة الإخبارية", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCfiwzLy-8yKzIbsmZTzxDgw&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_logo.svg/120px-Aljazeera_logo.svg.png", type: "youtube" },
+      { name: "الجزيرة مباشر", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCvbpffv_v8qPcm8_rG2s_rg&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/f2/Aljazeera_logo.svg/120px-Aljazeera_logo.svg.png", type: "youtube" },
+      { name: "العربية الحدث", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCrj53cxfl87vUmsmox5d2gA&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Al_Hadath_Logo.svg/120px-Al_Hadath_Logo.svg.png", type: "youtube" },
+      { name: "العربية الأخبار", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCahpxixMCwoANAftn6IxURg&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Al_Arabiya_Logo.svg/120px-Al_Arabiya_Logo.svg.png", type: "youtube" },
+      { name: "سكاي نيوز عربية", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCsP3Clx2qtH2mNZ6KolWoZQ&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Sky_News_Arabia_logo.svg/120px-Sky_News_Arabia_logo.svg.png", type: "youtube" },
+      { name: "TRT عربي", stream: "https://www.youtube-nocookie.com/embed/live_stream?channel=UCp0sQ-8yEaJ-31wzIq8_cGA&autoplay=1", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/TRT_Arabi_logo.png/120px-TRT_Arabi_logo.png", type: "youtube" },
+      { name: "روسيا اليوم (RT)", stream: "https://rt-ara.rttv.com/live/rtarab/playlist.m3u8", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/RT_Arabic_Logo.svg/120px-RT_Arabic_Logo.svg.png", type: "hls" },
+      { name: "فرانس 24 عربي", stream: "https://static.france24.com/live/F24_AR_LO_HLS/live_tv.m3u8", logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/France_24_logo.svg/120px-France_24_logo.svg.png", type: "hls" }
     ];
 
-    const channelsContainer = document.getElementById('channelsList');
-    const video = document.getElementById('videoPlayer');
-    const currentChannelText = document.getElementById('currentChannelName');
-
-    // توليد أزرار القنوات
-    channels.forEach((ch, idx) => {
-      const card = document.createElement('div');
-      card.className = 'channel-card';
-      card.tabIndex = 0; // لتمكين التحكم بالريموت
-      card.innerHTML = `
-        <i class="fa-solid ${ch.icon} channel-icon"></i>
-        <div class="channel-title">${ch.name}</div>
-      `;
-      
-      card.onclick = () => playStream(ch);
-      card.onkeydown = (e) => { if(e.key === 'Enter') playStream(ch); };
-      
-      channelsContainer.appendChild(card);
-    });
-
-    // دالة تشغيل البث
-    function playStream(channel) {
-      currentChannelText.innerText = channel.name;
-
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(channel.url);
-        hls.attachMedia(video);
-        hls.on(Hls.Events.MANIFEST_PARSED, () => {
-          video.play();
+    // جلب مئات القنوات العربية تلقائياً من قاعدة بيانات IPTV العالمية
+    async function fetchAllArabicChannels() {
+      try {
+        const res = await fetch('https://iptv-org.github.io/api/streams.json');
+        const streams = await res.json();
+        const chanRes = await fetch('https://iptv-org.github.io/api/channels.json');
+        const meta = await chanRes.json();
+        
+        // تصفية القنوات الناطقة بالعربية
+        const arabicMetaMap = {};
+        meta.filter(c => c.languages && c.languages.includes('ara')).forEach(c => {
+          arabicMetaMap[c.id] = c;
         });
-      } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-        video.src = channel.url;
-        video.addEventListener('loadedmetadata', () => {
-          video.play();
+
+        const fetchedList = [];
+        streams.forEach(s => {
+          if (arabicMetaMap[s.channel]) {
+            fetchedList.push({
+              name: arabicMetaMap[s.channel].name,
+              stream: s.url,
+              logo: arabicMetaMap[s.channel].logo || '',
+              type: 'hls'
+            });
+          }
         });
+
+        allChannels = [...directChannels, ...fetchedList];
+      } catch (err) {
+        allChannels = directChannels;
+      }
+      countBadge.innerText = `${allChannels.length} قناة متاحة`;
+      renderChannels(allChannels);
+      if (allChannels.length > 0) play(allChannels[0]);
+    }
+
+    function renderChannels(list) {
+      grid.innerHTML = '';
+      list.forEach((ch, idx) => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        const imgTag = ch.logo ? `<img src="${ch.logo}" alt="${ch.name}" onerror="this.style.display='none'">` : `<i class="fa-solid fa-satellite-dish" style="color:#d4af37;font-size:20px;"></i>`;
+        el.innerHTML = `${imgTag}<span>${ch.name}</span>`;
+        el.onclick = () => {
+          document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+          el.classList.add('active');
+          play(ch);
+        };
+        grid.appendChild(el);
+      });
+    }
+
+    function play(ch) {
+      channelTitle.innerText = ch.name;
+      if (ch.type === 'youtube') {
+        playerContainer.innerHTML = `<iframe src="${ch.stream}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+      } else {
+        playerContainer.innerHTML = `<video id="videoPlayer" controls autoplay></video>`;
+        const video = document.getElementById('videoPlayer');
+        if (Hls.isSupported()) {
+          hls.destroy();
+          hls = new Hls();
+          hls.loadSource(ch.stream);
+          hls.attachMedia(video);
+          hls.on(Hls.Events.MANIFEST_PARSED, () => video.play());
+          hls.on(Hls.Events.ERROR, () => {
+            channelTitle.innerText = `${ch.name} (البث غير متوفر حالياً - اختر قناة أخرى)`;
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          video.src = ch.stream;
+          video.play();
+        }
       }
     }
 
-    // تشغيل أول قناة تلقائياً عند الفتح
-    if (channels.length > 0) {
-      playStream(channels[0]);
-    }
+    // تفعيل البحث
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allChannels.filter(c => c.name.toLowerCase().includes(q));
+      renderChannels(filtered);
+    });
+
+    // بدء التحميل
+    fetchAllArabicChannels();
   </script>
 </body>
 </html>
